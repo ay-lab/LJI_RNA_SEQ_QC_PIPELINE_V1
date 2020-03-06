@@ -53,7 +53,7 @@ Removed html_dir from Jason file
 6. Add editing log below in this document
 
 ### Note 02/11/2020
-In case of deep sequencing depth (e.g. more than 50 million reads) you might encount problem of insurficient memory for the QC step; If that happened, do not rush to the 3rd step, stop here, go to the Submissions folder and find corresponding sh file, and make necessary changes to the sh file. You do not need to change the pipeline. 
+In case of deep sequencing depth (e.g. more than 50 million reads) you might experience problem of insurficient memory for the QC step; If that happened, do not rush to the 3rd step, stop here, go to the Submissions folder and find corresponding sh file, and make necessary changes to the sh file. You do not need to change the pipeline. 
 
 
 ### Note 02/12/2020
