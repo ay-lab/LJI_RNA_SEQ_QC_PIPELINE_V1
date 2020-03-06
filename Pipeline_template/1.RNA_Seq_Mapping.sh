@@ -11,6 +11,5 @@
 cd $PBS_O_WORKDIR
 mkdir -p Submissions
 mkdir -p temp
-/mnt/BioAdHoc/Groups/vd-ay/RNASeq_Workflow/RNA_SEQ_Script/RNA_SEQ_sub_GO.py -c conf_RNA_Seq.json -i fastq_table.csv -n 4
-rm RNA_Seq_Mapping_out
-rm RNA_Seq_Mapping_err
+/mnt/BioAdHoc/Groups/vd-ay/RNASeq_Workflow/RNA_SEQ_Script/RNA_SEQ_sub_GO.py -c conf_RNA_Seq.json -i fastq_table.csv -n 4 -seq "Paired"
+# -seq "Single"
