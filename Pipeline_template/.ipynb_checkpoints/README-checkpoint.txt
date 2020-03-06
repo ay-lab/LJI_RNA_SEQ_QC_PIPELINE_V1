@@ -1,4 +1,3 @@
-# LJI_RNA_SEQ_PIPELINE - AY and VIJAY lab
 ####### RNA SEQ PIPELINE FOR VIJAY AND AY LAB #######
 
 # Niu Du (ndu [at] lji.org)
@@ -9,9 +8,9 @@
 
 The following functions have been added to the pipeline:
 1. PCA plot - for QC and quick visualization of metadata (if provided); sample name is visible when hovering over scatter point. To change category please use the dropdown list on top left corner. 
-Example: https://informaticsdata.liai.org/NGS_analyses/ad_hoc/Groups/vd-vijay/ndu/SeAs_TH2_Resting/check_QC_PCA.html (internal use)
+Example: https://informaticsdata.liai.org/NGS_analyses/ad_hoc/Groups/vd-vijay/ndu/SeAs_TH2_Resting/check_QC_PCA.html
 2. USCS genome browser interface - additional bigwig link has been added to the report webpage that allows automatic upload of bw file for mapping visualization. (Thanks to Cristian for contribution to the function.) 
-Example: https://informaticsdata.liai.org/NGS_analyses/ad_hoc/Groups/vd-vijay/ndu/SeAs_TH2_Resting/QC_report.html (internal use)
+Example: https://informaticsdata.liai.org/NGS_analyses/ad_hoc/Groups/vd-vijay/ndu/SeAs_TH2_Resting/QC_report.html
 
 The following rule has been implemented per Greg’s request:
 1. Good sample if : Star counts > 3x10^6 reads (paired), uniquely mapped reads > 60%, too short reads < 50%, exotic reads > 50%, STAR counts in total uniquely mapped reads > 80%, t/rRNA < 10%,Total genes per sample > 5000,  5’-3’ bias < 1.25.
@@ -53,3 +52,4 @@ In case of deep sequencing depth (e.g. more than 50 million reads) you might enc
 
 # Note 02/12/2020
 Fixed the error that when only 1 category show up no figs were plotted
+
