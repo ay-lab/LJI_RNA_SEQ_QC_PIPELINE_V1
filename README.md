@@ -4,7 +4,7 @@
 * La Jolla, CA USA
 * Version: 1.1 (02/25/2020)
 
-### User tutorial 
+## User tutorial 
 Please following the tutorial below:
 
 1. copy files '1.RNA_Seq_Mapping.sh', '3.RNA_Seq_QC.sh', and 'conf_RNA_Seq.json' to your own working directory 
@@ -20,7 +20,7 @@ Please following the tutorial below:
     5.2 in case of redo-lib, replace orignal fastq file with new one and rerun coresponding bash file(s) in the Submission folder
     5.3 Once finished, qsub 3. RNA_Seq_QC.sh to generate new report for next round of QC.
 
-# Version: 1.1 (02/25/2020)
+## Version: 1.1 (02/25/2020)
 
 The following functions have been added to the pipeline:
 1. PCA plot - for QC and quick visualization of metadata (if provided); sample name is visible when hovering over scatter point. To change category please use the dropdown list on top left corner. 
@@ -40,7 +40,7 @@ Fixed problem when ? Symbol showed up in  5’-3’ bias report
 Removed html_dir from Jason file  
 
 
-# Version: 1.0 (02/04/2020)
+## Version: 1.0 (02/04/2020)
 
 
 
@@ -52,9 +52,9 @@ Removed html_dir from Jason file
 5. Current setting is optimized based on discussion with Seq team; in case of change to RNA_SEQ_Func.py, the pipeline need to be debugged thoroughly
 6. Add editing log below in this document
 
-# Note 02/11/2020
+### Note 02/11/2020
 In case of deep sequencing depth (e.g. more than 50 million reads) you might encount problem of insurficient memory for the QC step; If that happened, do not rush to the 3rd step, stop here, go to the Submissions folder and find corresponding sh file, and make necessary changes to the sh file. You do not need to change the pipeline. 
 
 
-# Note 02/12/2020
+### Note 02/12/2020
 Fixed the error that when only 1 category show up no figs were plotted
