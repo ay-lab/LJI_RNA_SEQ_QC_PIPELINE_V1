@@ -9,16 +9,16 @@ Please following the tutorial below:
 
 1. copy files '1.RNA_Seq_Mapping.sh', '3.RNA_Seq_QC.sh', and 'conf_RNA_Seq.json' to your own working directory 
 2. make changes to the conf_RNA_Seq.json file according to your settings
-   2.1 Please do not modify QC_threshold unless confirmed with sequence team and the bioinformatican who is in charge of RNA QC
+    1. Please do not modify QC_threshold unless confirmed with sequence team and the bioinformatican who is in charge of RNA QC
 3. Create your own fastq_table.csv file in your working dir follow the example in this folder; the address for fastq files can be relative (to your working dir) or absolute dir. 
 4. At your working directory, do the following steps
-   4.1 qsub 1.RNA_Seq_Mapping.sh; this will generate all bash files for submission to the grid, and generate a sh file for batch submission
-   4.2 wait for 4.1 to finish, and bash 2.Submissions.sh; All sh files will be submitted to the grid
-   4.3 wait for all tasks in 4.2 to finish, and qsub 3.RNA_Seq_QC.sh; this step will generate QC report for sequence team to review
+   1. qsub 1.RNA_Seq_Mapping.sh; this will generate all bash files for submission to the grid, and generate a sh file for batch submission
+   2. wait for 4.1 to finish, and bash 2.Submissions.sh; All sh files will be submitted to the grid
+   3. wait for all tasks in 4.2 to finish, and qsub 3.RNA_Seq_QC.sh; this step will generate QC report for sequence team to review
 5. Once the workflow is completed, sending report link to Seqteam, and
-   5.1 in case of rerun, merge new fastq file with old ones and rerun coresponding bash file(s) in the Submission folder
-   5.2 in case of redo-lib, replace orignal fastq file with new one and rerun coresponding bash file(s) in the Submission folder
-   5.3 Once finished, qsub 3. RNA_Seq_QC.sh to generate new report for next round of QC.
+   1. in case of rerun, merge new fastq file with old ones and rerun coresponding bash file(s) in the Submission folder
+   2. in case of redo-lib, replace orignal fastq file with new one and rerun coresponding bash file(s) in the Submission folder
+   3. Once finished, qsub 3. RNA_Seq_QC.sh to generate new report for next round of QC.
 
 ## Version: 1.1 (02/25/2020)
 
