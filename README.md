@@ -48,7 +48,7 @@ Removed html_dir from Jason file
 1. In case of major change to the pipeline, please make a copy of all files with in /mnt/BioAdHoc/Groups/vd-ay/RNASeq_Workflow/RNA_SEQ_Script/
 2. To change the QC rule, the logic for ranking sequence is in quality QC_rule.py, and the threshold is located in the conf_RNA_Seq.json file
 3. To add more plot functions, the module for each kind of plot is in RNA_SEQ_plots.py, and add excution step in RNA_SEQ_QC_GO.py
-4. To modify tools (ver only), the command lines are located in STEP 2 of RNA_SEQ_Func.py
+4. To modify tools (ver only), ~~the command lines are located in STEP 2 of RNA_SEQ_Func.py~~,make changes in the json file.
 5. Current setting is optimized based on discussion with Seq team; in case of change to RNA_SEQ_Func.py, the pipeline need to be debugged thoroughly
 6. Add editing log below in this document
 
