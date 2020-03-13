@@ -13,11 +13,20 @@
 
 import json
 
-def RNA_QC(sample_tuple,dict_threshold):
-    if sample_tuple.final_STAR_counts > dict_threshold['final_STAR_counts']:
-        A = True
-    else:
-        A = False 
+def RNA_QC(sample_tuple,dict_threshold,X_threshold):
+    
+    minimal_counts = dict_threshold['minimal_counts']
+    
+    if minimal_counts == 'fixed':# Reseq based fixed total STAR count 
+        if sample_tuple.final_STAR_counts > dict_threshold['final_STAR_counts']:
+            A = True
+        else:
+            A = False 
+    elif minimal_counts == 'perc': # Reseq based on % of gene recovery rate; not a fixed value
+        if sample_tuple.final_STAR_counts > X_threshold:
+            A = True
+        else:
+            A = False 
     if sample_tuple.uniquely_mapped_reads_perc > dict_threshold['uniquely_mapped_reads_perc']:
         B = True
     else:

@@ -9,7 +9,7 @@ import argparse,json
 from glob import glob
 
 from RNA_SEQ_Func import merge_counts,make_report
-from RNA_SEQ_QC_plots import bam_plot,QC_plot,Plot_3D
+from RNA_SEQ_QC_plots import bam_plot,QC_plot,Plot_3D,RNA_QC_spearman,soft_threshold
 
 
 def main():
@@ -42,6 +42,9 @@ def main():
     meta_input = dict_conf['config']['metadata_dir']
     Plot_3D(meta_input,n_comps = 10) 
     
+    RNA_QC_spearman()
+    
+    soft_threshold(dict_conf)
     
 def read_json(file = 'conf_RNA_Seq.json'):
     with open(file) as json_file:

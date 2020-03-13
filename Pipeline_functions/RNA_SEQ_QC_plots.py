@@ -21,7 +21,7 @@ import plotly.offline as py
 from sklearn.decomposition import PCA,TruncatedSVD
 import numpy as np
 import plotly.graph_objs as go
-from RNA_SEQ_Func import read_bamcoverage
+from RNA_SEQ_Func import read_bamcoverage,platt,fit_platt
 
 def QC_plot(vis_parameters,dict_threshold):
     
@@ -112,7 +112,42 @@ def bam_plot():
     except FileNotFoundError:
         print('Please generate QC report')
 
+def RNA_QC_spearman():
+    '''Using spearman correlation to detect outliers'''
+    try:
+        df_corr = pd.read_csv('counts/TPM_counts.csv',index_col = 0).corr(method = 'spearman')
+        sns.clustermap(df_corr,vmin = 0, vmax = 1,figsize = (int(len(df_corr)/3),int(len(df_corr)/3)))
+        plt.savefig(f'QC_plots/Spearman_correlation.png',format='png', bbox_inches='tight')
+    except FileNotFoundError:
+        print('Please generate TPM table')
+        
+        
+def soft_threshold(dict_threshold):
+    '''Detects minimal soft threshold for total STAR counts'''
+    try:
+        gene_recovery_perc = dict_threshold['QC_threshold']['gene_recovery_perc']
+        df_QC_report = pd.read_csv('QC_report.csv',index_col = 0)
+        para = fit_platt([df_QC_report['final_STAR_counts'].values,df_QC_report['Total_genes'].values])
+        fit_X = np.arange(0,max(df_QC_report['final_STAR_counts'].values),max(df_QC_report['final_STAR_counts'].values)/100)
+        Y_max = max(platt(para,fit_X,0))
+        Y_threshold = Y_max*gene_recovery_perc
+        X_threshold = -np.log(1-gene_recovery_perc)*Y_max/para[1]
 
+        plt.subplots(figsize = (12,6))
+        plt.plot(df_QC_report['final_STAR_counts'].values,df_QC_report['Total_genes'].values,'o')
+        X_fit = np.arange(0,max(df_QC_report['final_STAR_counts'].values),max(df_QC_report['final_STAR_counts'].values)/100)
+        plt.plot(X_fit,platt(para,X_fit,0),'-')
+        plt.axvline(x = X_threshold,linestyle = '--')
+        perc_threshold ="{:.1%}".format(gene_recovery_perc)
+        text = f'{int(X_threshold):,}'
+        plt.text(X_threshold+100, Y_max/2, f'<- {gene_recovery_perc} gene recovery threshold = {text}')
+        plt.xlabel('STAR counts')
+        plt.ylabel('Number of genes')
+        plt.savefig(f'QC_plots/STAR_minimal_counts_soft_threshold.png',format='png', bbox_inches='tight')
+    except FileNotFoundError:
+        print('Please generate TPM table')
+    
+        
 def Plot_3D(df_meta_input = None,n_comps = 10,dim = 3):
     try:
         df_QC_report = pd.read_csv('QC_report.csv',index_col=0)
@@ -120,12 +155,12 @@ def Plot_3D(df_meta_input = None,n_comps = 10,dim = 3):
         # Import metadata; if not provided only QC will be used
         try:
             df_meta_plot = pd.read_csv(df_meta_input,index_col=0)
-            df_meta_plot = df_meta_plot.select_dtypes('object').merge(df_QC_report[['recommendation']],left_index = True,right_index = True)
+            df_meta_plot = df_meta_plot.select_dtypes('object').merge(df_QC_report[['recommendation','Outlier']],left_index = True,right_index = True)
             df_meta_plot = df_meta_plot.astype(str)
             
         except FileNotFoundError:
             print('No metadata file found')
-            df_meta_plot = df_QC_report[['recommendation']]
+            df_meta_plot = df_QC_report[['recommendation','Outlier']]
             
         df_plot = pd.read_csv('./counts/TPM_counts.csv',index_col = 0)[df_meta_plot.index]
         

@@ -10,4 +10,4 @@
 
 cd $PBS_O_WORKDIR
 mkdir -p QC_plots
-/mnt/BioAdHoc/Groups/vd-ay/RNASeq_Workflow/RNA_SEQ_Script/RNA_SEQ_QC_GO.py -c conf_RNA_Seq.json
+/mnt/BioAdHoc/Groups/vd-ay/RNASeq_Workflow/RNA_SEQ_Script/LJI_RNA_SEQ_PIPELINE/Pipeline_functions/RNA_SEQ_QC_GO.py -c conf_RNA_Seq.json

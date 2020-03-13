@@ -1,8 +1,13 @@
-# **LJI_RNA_SEQ_PIPELINE - AY and VIJAY lab**
+# **LJI RNA SEQ QC PIPELINE**
 * Niu Du (ndu [at] lji.org)
 * La Jolla Institute for Immunology (LJI)
 * La Jolla, CA USA
 * Version: 1.1 (02/25/2020)
+
+## Introduction
+
+This pipeline was implemented for AY and VIJAY lab
+
 
 ## User tutorial 
 Please following the tutorial below:
@@ -19,6 +24,12 @@ Please following the tutorial below:
    1. in case of rerun, merge new fastq file with old ones and rerun coresponding bash file(s) in the Submission folder
    2. in case of redo-lib, replace orignal fastq file with new one and rerun coresponding bash file(s) in the Submission folder
    3. Once finished, qsub 3. RNA_Seq_QC.sh to generate new report for next round of QC.
+
+## Release Note
+
+## Version: 1.2 (03/10/2020)
+
+
 
 ## Version: 1.1 (02/25/2020)
 
