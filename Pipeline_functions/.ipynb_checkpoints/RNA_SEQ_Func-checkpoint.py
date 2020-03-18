@@ -16,6 +16,7 @@ import os
 import pandas as pd
 from functools import reduce
 from scipy import stats
+from scipy.stats import norm
 import numpy as np
 from scipy.optimize import least_squares
 from glob import glob
@@ -197,7 +198,7 @@ def make_report(dict_conf,sample_list):
     df_QC_report['short-noncoding_perc'] = (df_genetype['short-noncoding']/df_counts_filter.sum(axis = 0)).apply(lambda x: round(100*x,2))
     df_QC_report['Total_genes'] = (df_counts>10).sum(axis = 0)
     
-    # Calculate minimal total STAR counts that yields desired percentage of gene recovery rate using Platt func for fitting 
+    # Calculate minimal total STAR counts that yields desired percentage of gene recovery rate using Platt func for fitting, then take samples passing the initial filter and get minimal genes per sample based on normal distribution - those < 0.95 confidence interval will be marked 
     
     para = fit_platt([df_QC_report['final_STAR_counts'].values,df_QC_report['Total_genes'].values])
     fit_X = np.arange(0,max(df_QC_report['final_STAR_counts'].values),max(df_QC_report['final_STAR_counts'].values)/100)
@@ -205,12 +206,17 @@ def make_report(dict_conf,sample_list):
     Y_threshold = Y_max*gene_recovery_perc
     X_threshold = -np.log(1-gene_recovery_perc)*Y_max/para[1]
     
-    # Calculate outliers based on spearman correlation
+    data_init_filter = df_QC_report[df_QC_report['final_STAR_counts']>X_threshold]['Total_genes']
+    para_norm = norm.fit(data_init_filter)
+    Y_lower = norm.ppf(0.05,para_norm[0],para_norm[1])
     
-    df_corr = pd.read_csv('counts/TPM_counts.csv',index_col = 0).corr(method = 'spearman')
-    df_QC_report['Outlier'] = ['Yes' if x < 0.6 else 'No' for x in df_corr.reindex(df_QC_report.index).mean(axis = 1)]
+    # Calculate outliers based on spearman correlation and any sample with mean corr significantly different from the mean at 95% confidence interval will be marked "outlier"
     
-    df_QC_report['recommendation'] = [RNA_QC(row,dict_conf['QC_threshold'],X_threshold) for row in df_QC_report.itertuples()]
+    df_corr = pd.read_csv('counts/TPM_counts.csv',index_col = 0).corr(method = 'spearman')    
+    corr_norm = norm.fit(df_corr.reindex(df_QC_report.index).mean(axis = 1))
+    df_QC_report['Outlier'] = ['Yes' if x < norm.ppf(0.05,corr_norm[0],corr_norm[1]) else 'No' for x in df_corr.reindex(df_QC_report.index).mean(axis = 1)]
+    
+    df_QC_report['recommendation'] = [RNA_QC(row,dict_conf['QC_threshold'],X_threshold,Y_lower) for row in df_QC_report.itertuples()]
     
     df_QC_report = df_QC_report[['total_reads','filtered_reads','filtered_reads_perc','adaptor_trimm_perc','dup_rate','uniquely_mapped_reads','uniquely_mapped_reads_perc','spliced_reads','anno_spliced_reads','too_short_reads','too_short_reads_perc','exonic_perc','intronic_perc','intergenic_perc','bias_5_prim','bias_3_prim','bias_5to3_prim','STAR_counts','STAR_counts_perc','t_rRNA_counts','t_rRNA_counts_perc','protein_coding_perc','pseudogene_perc','long-noncoding_perc','short-noncoding_perc','final_STAR_counts','insert_mean','insert_median','Total_genes','seq_QC','map_report','map_QC','bam_QC','bigwig','recommendation','Outlier']]
 

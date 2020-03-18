@@ -20,6 +20,7 @@ import seaborn as sns
 import plotly.offline as py
 from sklearn.decomposition import PCA,TruncatedSVD
 import numpy as np
+from scipy.stats import norm
 import plotly.graph_objs as go
 from RNA_SEQ_Func import read_bamcoverage,platt,fit_platt
 
@@ -122,25 +123,38 @@ def RNA_QC_spearman():
         print('Please generate TPM table')
         
         
-def soft_threshold(dict_threshold):
+def soft_threshold(dict_conf):
     '''Detects minimal soft threshold for total STAR counts'''
     try:
-        gene_recovery_perc = dict_threshold['QC_threshold']['gene_recovery_perc']
+        gene_recovery_perc = dict_conf['QC_threshold']['gene_recovery_perc']
         df_QC_report = pd.read_csv('QC_report.csv',index_col = 0)
         para = fit_platt([df_QC_report['final_STAR_counts'].values,df_QC_report['Total_genes'].values])
         fit_X = np.arange(0,max(df_QC_report['final_STAR_counts'].values),max(df_QC_report['final_STAR_counts'].values)/100)
         Y_max = max(platt(para,fit_X,0))
-        Y_threshold = Y_max*gene_recovery_perc
-        X_threshold = -np.log(1-gene_recovery_perc)*Y_max/para[1]
-
+        Y_threshold = Y_max*gene_recovery_perc # Y percentage threshold based on input
+        X_threshold = -np.log(1-gene_recovery_perc)*Y_max/para[1] # Calculated X threshold based on Y threshold value
+        
+        data_init_filter = df_QC_report[df_QC_report['final_STAR_counts']>X_threshold]['Total_genes']
+        para_norm = norm.fit(data_init_filter)
+        Y_lower = norm.ppf(0.05,para_norm[0],para_norm[1]) # New Y lower limit based on normal distribution
+        
         plt.subplots(figsize = (12,6))
         plt.plot(df_QC_report['final_STAR_counts'].values,df_QC_report['Total_genes'].values,'o')
         X_fit = np.arange(0,max(df_QC_report['final_STAR_counts'].values),max(df_QC_report['final_STAR_counts'].values)/100)
         plt.plot(X_fit,platt(para,X_fit,0),'-')
-        plt.axvline(x = X_threshold,linestyle = '--')
+        plt.axvline(x = max(X_threshold,dict_conf['QC_threshold']['final_STAR_counts']),linestyle = '--',color = 'r')
+        plt.axhline(y = Y_lower,linestyle = '--',color = 'r')
         perc_threshold ="{:.1%}".format(gene_recovery_perc)
-        text = f'{int(X_threshold):,}'
-        plt.text(X_threshold+100, Y_max/2, f'<- {gene_recovery_perc} gene recovery threshold = {text}')
+        
+        if X_threshold > int(dict_conf['QC_threshold']['final_STAR_counts']):
+            text = f'{int(X_threshold):,}'
+            plt.text(X_threshold*1.1, Y_max/2, f'<- {gene_recovery_perc} gene recovery threshold = {text}')
+        else:
+            X_threshold = int(dict_conf['QC_threshold']['final_STAR_counts'])
+            text = f'{int(X_threshold):,}'
+            plt.text(int(X_threshold*1.1), Y_max/2, f'<- minimal set threshold = {text}')
+            
+        plt.text(X_threshold*1.5, Y_max/1.3, f'^ minimal gene threshold of {int(Y_lower)} at 0.95 confidence interval',color = 'r')
         plt.xlabel('STAR counts')
         plt.ylabel('Number of genes')
         plt.savefig(f'QC_plots/STAR_minimal_counts_soft_threshold.png',format='png', bbox_inches='tight')

@@ -13,7 +13,7 @@
 
 import json
 
-def RNA_QC(sample_tuple,dict_threshold,X_threshold):
+def RNA_QC(sample_tuple,dict_threshold,count_X_low,count_Y_low):
     
     minimal_counts = dict_threshold['minimal_counts']
     
@@ -22,8 +22,8 @@ def RNA_QC(sample_tuple,dict_threshold,X_threshold):
             A = True
         else:
             A = False 
-    elif minimal_counts == 'perc': # Reseq based on % of gene recovery rate; not a fixed value
-        if sample_tuple.final_STAR_counts > X_threshold:
+    elif minimal_counts == 'perc': # Reseq based on % of gene recovery rate if the threshold is higher than the fixed value
+        if sample_tuple.final_STAR_counts > max(count_X_low,dict_threshold['final_STAR_counts']):
             A = True
         else:
             A = False 
@@ -43,11 +43,11 @@ def RNA_QC(sample_tuple,dict_threshold,X_threshold):
         E = True
     else:
         E = False
-    if sample_tuple.Total_genes  > dict_threshold['Total_genes']:
-        F = True
-    else:
+    if sample_tuple.Total_genes  < max(dict_threshold['Total_genes'],count_Y_low):
         F = False
-    if float(sample_tuple.bias_5to3_prim) < dict_threshold['bias_5to3_prim']:
+    else:
+        F = True
+    if (float(sample_tuple.bias_5to3_prim) < dict_threshold['bias_5to3_prim'])&(float(sample_tuple.bias_5to3_prim) > 0.95): # In rear cases the bias value is small; also not accepted
         G = True
     else:
         G = False
@@ -56,7 +56,9 @@ def RNA_QC(sample_tuple,dict_threshold,X_threshold):
     
     if A and B and C and D and E and F and G:
         return '1.Good'
-    elif B and C and D and E and F and G:
+    elif A and B and C and D and E and G:
+        return '3.Manual QC'
+    elif B and C and D and E and G:
         return '2.Reseq'
     else:
         return '3.Manual QC'
