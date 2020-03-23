@@ -39,6 +39,9 @@ def main():
     vis_parameters = ['bias_5to3_prim']
     QC_plot(vis_parameters,dict_conf['QC_threshold'])
     
+    vis_parameters = ['insert_median']
+    QC_plot(vis_parameters,dict_conf['QC_threshold'])
+    
     meta_input = dict_conf['config']['metadata_dir']
     Plot_3D(meta_input,n_comps = 10) 
     

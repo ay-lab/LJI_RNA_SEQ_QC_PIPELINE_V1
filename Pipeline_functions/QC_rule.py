@@ -13,6 +13,8 @@
 
 import json
 
+
+
 def RNA_QC(sample_tuple,dict_threshold,count_X_low,count_Y_low):
     
     minimal_counts = dict_threshold['minimal_counts']
@@ -43,22 +45,25 @@ def RNA_QC(sample_tuple,dict_threshold,count_X_low,count_Y_low):
         E = True
     else:
         E = False
-    if sample_tuple.Total_genes  < max(dict_threshold['Total_genes'],count_Y_low):
+    # 
+    if sample_tuple.Total_genes  < max(dict_threshold['Total_genes'][0],min(dict_threshold['Total_genes'][1],count_Y_low)):
         F = False
     else:
         F = True
-    if (float(sample_tuple.bias_5to3_prim) < dict_threshold['bias_5to3_prim'])&(float(sample_tuple.bias_5to3_prim) > 0.95): # In rear cases the bias value is small; also not accepted
+    if (float(sample_tuple.bias_5to3_prim) < dict_threshold['bias_5to3_prim'][1])&(float(sample_tuple.bias_5to3_prim) > dict_threshold['bias_5to3_prim'][0]): # In rear cases the bias value is small; also not accepted
         G = True
     else:
         G = False
-       
-    
-    
-    if A and B and C and D and E and F and G:
-        return '1.Good'
-    elif A and B and C and D and E and G:
-        return '3.Manual QC'
-    elif B and C and D and E and G:
-        return '2.Reseq'
+    if (sample_tuple.insert_median > dict_threshold['insert_median'][0]):# and (sample_tuple.insert_median < dict_threshold['insert_median'][1]):
+        H = True
     else:
-        return '3.Manual QC'
+        H = False
+    
+    
+    
+    if A and B and C and D and E and F and G and H:
+        return '1.Good','None'
+    elif B and C and D and E and F and G and H:
+        return '2.Reseq','counts='+str(int(sample_tuple.final_STAR_counts))+'threshold='+str(int(max(count_X_low,dict_threshold['final_STAR_counts'])))
+    else:
+        return '3.Manual QC','/'.join(name for item,name in zip([A,B,C,D,E,F,G,H],['final_STAR_counts','uniquely_mapped_reads_perc','exonic_perc','too_short_reads_perc','t_rRNA_counts_perc','Total_genes','bias_5to3_prim','insert_median']) if item == False)

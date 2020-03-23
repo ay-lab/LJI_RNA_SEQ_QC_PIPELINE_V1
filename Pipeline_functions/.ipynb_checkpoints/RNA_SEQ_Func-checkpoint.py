@@ -9,8 +9,6 @@
 # User environments
 # python 3.X 
 
-
-
 import json
 import os
 import pandas as pd
@@ -123,8 +121,14 @@ def gen_Submission(fastq_table,dict_conf,thread = 4,seq_type = 'Paired'):
     bed_dir = dict_conf['config']['bed_dir']
     ref_dir = dict_conf['config']['ref_dir']
     gtf_dir = dict_conf['config']['gtf_dir']
-    
     annotation_file = dict_conf['config']['annotation_file']
+    
+    fastp_app = dict_conf['app']['fastp']
+    STAR_app = dict_conf['app']['STAR']
+    samtools_app = dict_conf['app']['samtools']
+    bamCoverage_app = dict_conf['app']['bamCoverage']
+    qualimap_app = dict_conf['app']['qualimap']
+    
     
     for sample in fastq_table.index:
         fastq_f = fastq_table.loc[sample]['fastq_f']
@@ -135,20 +139,20 @@ def gen_Submission(fastq_table,dict_conf,thread = 4,seq_type = 'Paired'):
             f.write('mkdir -p fastp_output\nmkdir -p fastp_report\nmkdir -p Fastq_filtered\nmkdir -p Input\nmkdir -p counts\n')
             f.write(f'cp {ref_dir}/../{annotation_file} Input/ \n')
             # fastp
-            f.write(f'/mnt/BioHome/ndu/anaconda3/bin/fastp_0.20.0 -w {thread} -i {fastq_f} -I {fastq_r} -o {dirin}/Fastq_filtered/{sample}_R1.fastq.gz -O {dirin}/Fastq_filtered/{sample}_R2.fastq.gz -j {dirin}/fastp_output/{sample}_fastp.json -h {dirin}/fastp_report/{sample}_fastp.html\n\n')
+            f.write(f'{fastp_app} -w {thread} -i {fastq_f} -I {fastq_r} -o {dirin}/Fastq_filtered/{sample}_R1.fastq.gz -O {dirin}/Fastq_filtered/{sample}_R2.fastq.gz -j {dirin}/fastp_output/{sample}_fastp.json -h {dirin}/fastp_report/{sample}_fastp.html\n\n')
 
             # STAR_MAPPING
             f.write(f'mkdir -p {dirin}/bam_aligned/{sample}\n')
-            f.write(f'/mnt/BioHome/ndu/anaconda3/bin/STAR --runThreadN {thread} --genomeDir {ref_dir} --sjdbGTFfile {gtf_dir} --readFilesIn {dirin}/Fastq_filtered/{sample}_R1.fastq.gz {dirin}/Fastq_filtered/{sample}_R2.fastq.gz --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix {dirin}/bam_aligned/{sample}/{sample}_\n\n')
+            f.write(f'{STAR_app} --runThreadN {thread} --genomeDir {ref_dir} --sjdbGTFfile {gtf_dir} --readFilesIn {dirin}/Fastq_filtered/{sample}_R1.fastq.gz {dirin}/Fastq_filtered/{sample}_R2.fastq.gz --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix {dirin}/bam_aligned/{sample}/{sample}_\n\n')
 
             # Export for QC
             f.write(f'mkdir -p {dirin}/bed_wiggle\n')
-            f.write(f'samtools index {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam\n')
-            f.write(f'/mnt/BioHome/ndu/anaconda3/bin/bamCoverage -p {thread}  -b {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -o {dirin}/bed_wiggle/{sample}.bw\n')
+            f.write(f'{samtools_app} index {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam\n')
+            f.write(f'{bamCoverage_app} -p {thread}  -b {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -o {dirin}/bed_wiggle/{sample}.bw\n')
             f.write(f'mkdir -p {dirin}/qualimap/{sample}\n')
-            f.write(f'/mnt/BioHome/ndu/anaconda3/bin/qualimap rnaseq -pe --sorted --java-mem-size=30G -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -gtf {gtf_dir} -outdir {dirin}/qualimap/{sample}\n')
+            f.write(f'{qualimap_app} rnaseq -pe --sorted --java-mem-size=30G -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -gtf {gtf_dir} -outdir {dirin}/qualimap/{sample}\n')
             f.write(f'mkdir -p {dirin}/qualimap_bamqc/{sample}\n')
-            f.write(f'/mnt/BioHome/ndu/anaconda3/bin/qualimap bamqc -nt {thread} --java-mem-size=30G --skip-duplicated -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -outdir {dirin}/qualimap_bamqc/{sample}\n')
+            f.write(f'{qualimap_app} bamqc -nt {thread} --java-mem-size=30G --skip-duplicated -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -outdir {dirin}/qualimap_bamqc/{sample}\n')
     with open('2.Submissions.sh','w') as f:    
         for submission in glob('Submissions/*.sh'):        
             f.write(f'qsub {submission}\n')
@@ -214,16 +218,17 @@ def make_report(dict_conf,sample_list):
     
     df_corr = pd.read_csv('counts/TPM_counts.csv',index_col = 0).corr(method = 'spearman')    
     corr_norm = norm.fit(df_corr.reindex(df_QC_report.index).mean(axis = 1))
-    df_QC_report['Outlier'] = ['Yes' if x < norm.ppf(0.05,corr_norm[0],corr_norm[1]) else 'No' for x in df_corr.reindex(df_QC_report.index).mean(axis = 1)]
+    df_QC_report['Outlier'] = ['Yes' if x < min(norm.ppf(0.05,corr_norm[0],corr_norm[1]),0.6) else 'No' for x in df_corr.reindex(df_QC_report.index).mean(axis = 1)] # if mean spearman corr for a sample < 0.6 or less than 0.95 confidence that is lower than 0.6, then mark as outlier 
     
-    df_QC_report['recommendation'] = [RNA_QC(row,dict_conf['QC_threshold'],X_threshold,Y_lower) for row in df_QC_report.itertuples()]
+    df_QC_report['recommendation'] = [RNA_QC(row,dict_conf['QC_threshold'],X_threshold,Y_lower)[0] for row in df_QC_report.itertuples()]
+    df_QC_report['Note'] = [RNA_QC(row,dict_conf['QC_threshold'],X_threshold,Y_lower)[1] for row in df_QC_report.itertuples()]
     
-    df_QC_report = df_QC_report[['total_reads','filtered_reads','filtered_reads_perc','adaptor_trimm_perc','dup_rate','uniquely_mapped_reads','uniquely_mapped_reads_perc','spliced_reads','anno_spliced_reads','too_short_reads','too_short_reads_perc','exonic_perc','intronic_perc','intergenic_perc','bias_5_prim','bias_3_prim','bias_5to3_prim','STAR_counts','STAR_counts_perc','t_rRNA_counts','t_rRNA_counts_perc','protein_coding_perc','pseudogene_perc','long-noncoding_perc','short-noncoding_perc','final_STAR_counts','insert_mean','insert_median','Total_genes','seq_QC','map_report','map_QC','bam_QC','bigwig','recommendation','Outlier']]
+    df_QC_report = df_QC_report[['total_reads','filtered_reads','filtered_reads_perc','adaptor_trimm_perc','dup_rate','uniquely_mapped_reads','uniquely_mapped_reads_perc','spliced_reads','anno_spliced_reads','too_short_reads','too_short_reads_perc','exonic_perc','intronic_perc','intergenic_perc','bias_5_prim','bias_3_prim','bias_5to3_prim','STAR_counts','STAR_counts_perc','t_rRNA_counts','t_rRNA_counts_perc','protein_coding_perc','pseudogene_perc','long-noncoding_perc','short-noncoding_perc','final_STAR_counts','insert_mean','insert_median','Total_genes','seq_QC','map_report','map_QC','bam_QC','bigwig','recommendation','Outlier','Note']]
 
     df_QC_report = df_QC_report.sort_index()
-    df_QC_report[['total_reads','filtered_reads','filtered_reads_perc','adaptor_trimm_perc','dup_rate','uniquely_mapped_reads','uniquely_mapped_reads_perc','spliced_reads','anno_spliced_reads','too_short_reads','too_short_reads_perc','exonic_perc','intronic_perc','intergenic_perc','bias_5_prim','bias_3_prim','bias_5to3_prim','STAR_counts','STAR_counts_perc','t_rRNA_counts','t_rRNA_counts_perc','protein_coding_perc','pseudogene_perc','long-noncoding_perc','short-noncoding_perc','final_STAR_counts','insert_mean','insert_median','Total_genes','recommendation','Outlier']].to_csv('QC_report.csv')
+    df_QC_report[['total_reads','filtered_reads','filtered_reads_perc','adaptor_trimm_perc','dup_rate','uniquely_mapped_reads','uniquely_mapped_reads_perc','spliced_reads','anno_spliced_reads','too_short_reads','too_short_reads_perc','exonic_perc','intronic_perc','intergenic_perc','bias_5_prim','bias_3_prim','bias_5to3_prim','STAR_counts','STAR_counts_perc','t_rRNA_counts','t_rRNA_counts_perc','protein_coding_perc','pseudogene_perc','long-noncoding_perc','short-noncoding_perc','final_STAR_counts','insert_mean','insert_median','Total_genes','recommendation','Outlier','Note']].to_csv('QC_report.csv')
 
-    df_html = df_QC_report[['seq_QC','map_report','map_QC','bam_QC','bigwig','recommendation','Outlier']]
+    df_html = df_QC_report[['seq_QC','map_report','map_QC','bam_QC','bigwig','recommendation','Outlier','Note']]
     df_html.index.name = f'<a href="./check_QC_PCA.html">PCA_plot</a>\t\t<a href="./QC_report.csv">Download_table</a>\t\t<a href="./QC_plots">QC_plots</a>'
     df_html.to_html(f'QC_report.html',escape=False,notebook = True)
     

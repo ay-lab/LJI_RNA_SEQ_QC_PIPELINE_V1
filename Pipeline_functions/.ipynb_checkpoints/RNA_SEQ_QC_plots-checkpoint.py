@@ -113,6 +113,7 @@ def bam_plot():
     except FileNotFoundError:
         print('Please generate QC report')
 
+        
 def RNA_QC_spearman():
     '''Using spearman correlation to detect outliers'''
     try:
