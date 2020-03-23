@@ -1,0 +1,11 @@
+site_name: LJI-RNASeq QC pipeline
+nav:
+  - Home: index.md
+  - Tutorials:
+    - General workflow: Workflow.md
+    - QC tutorial: QC_Tutorial.md
+    - Create reference: Reference_genome.md
+  - Maintenance:
+    - 'Change QC rules': ' '
+    - 'Change pipeline': ' '
+theme: readthedocs

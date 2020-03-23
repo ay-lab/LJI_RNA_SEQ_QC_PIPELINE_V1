@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>QC tutorial - LJI-RNASeq QC pipeline</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "QC tutorial";
+    var mkdocs_page_input_path = "QC_Tutorial.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> LJI-RNASeq QC pipeline</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Tutorials</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../Workflow/">General workflow</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">QC tutorial</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#step-1-overview">Step 1: overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-2-examine-pca">Step 2: Examine PCA</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-3-examine-qc-table">Step 3: Examine QC table</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-4-examine-qc-plots">Step 4: Examine QC plots</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../Reference_genome/">Create reference</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Maintenance</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="" href="../ ">Change QC rules</a>
+                    </li>
+                    <li class="toctree-l1"><a class="" href="../ ">Change pipeline</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">LJI-RNASeq QC pipeline</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Tutorials &raquo;</li>
+        
+      
+    
+    <li>QC tutorial</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="qc-tutorial"><strong>QC tutorial</strong></h1>
+<hr />
+<h3 id="step-1-overview">Step 1: overview</h3>
+<p>To get an idea about the overall quality of RNASeq result, you can refer to the <a href="#Outlier">recommendation and outlier</a> columns in the main QC report page. In general, you should find most of your samples labeled with 1.Good and No in those two columns, respectively. If not, there might be  critical issues in sample prep or sequencing steps that need to be diagnosed separately. The links to <strong>PCA plot</strong>, <strong>QC parameters</strong> and <strong>QC plots</strong> are located on the top left corner of the report table, while the sample specific QC reports are located on the right side of their corresponding sample IDs.</p>
+<p><img src='img/QC_report.png'></p>
+<h3 id="step-2-examine-pca">Step 2: Examine PCA</h3>
+<p>The interactive PCA plot allows you to quickly inspect meta information of each sample. If no meta table was provided in the json file, you can still check the recommendation and Outlier information in respect to each sample. To select meta information, click on the dropdown menu and select the target item. You can make specific category invisible by click its symbol at the bottom left corner.</p>
+<p><img src='img/PCA_plot.png' width = 600></p>
+<h3 id="step-3-examine-qc-table">Step 3: Examine QC table</h3>
+<p>The QC table includes all important QC parameters and should be your main source of information for manual QC. We used fairly stringent criteria for ranking the sample quality, therefore it is pretty safe to ignore a sample marked as a good sample and not a outlier (in most cases a good sample should not be a outlier). If a category 2 or 3 sample was not in the good list but close enough due to the stringent criteria, you might not need to re-sequence it. Besides these scenarios, the sample need to be resequenced or the library should be redone. If not possible then the sample should be eliminated. Below is the dictionary of QC parameters used.   </p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>total_reads</td>
+<td>All paired end reads; each pair is considered one read</td>
+</tr>
+<tr>
+<td>filtered_reads</td>
+<td>fastp filtered reads with low complexity and low quality reads removed</td>
+</tr>
+<tr>
+<td>filtered_reads_perc</td>
+<td>percentage of remaining reads after fastq QC</td>
+</tr>
+<tr>
+<td>adaptor_trimm_perc</td>
+<td>percentage of reads that have adaptor content and have been trimmed</td>
+</tr>
+<tr>
+<td>dup_rate</td>
+<td>percentage of fastq sequence that have duplicated reads</td>
+</tr>
+<tr>
+<td>uniquely_mapped_reads</td>
+<td>reads only mapped to one location of the genome model</td>
+</tr>
+<tr>
+<td>uniquely_mapped_reads_perc</td>
+<td>percentage of uniquely mapped reads</td>
+</tr>
+<tr>
+<td>spliced_reads</td>
+<td>total number of splicing events in each read</td>
+</tr>
+<tr>
+<td>anno_spliced_reads</td>
+<td>Splicing known in splice junction database</td>
+</tr>
+<tr>
+<td>too_short_reads</td>
+<td>the overlap between reads and genome is less than the minimal set level; in STAR the default is 60% of seqeuence length</td>
+</tr>
+<tr>
+<td>too_short_reads_perc</td>
+<td>percentage of those too short reads</td>
+</tr>
+<tr>
+<td>exonic_perc</td>
+<td>percentage of reads mapped to exonic regions</td>
+</tr>
+<tr>
+<td>intronic_perc</td>
+<td>percentage of reads mapped to intronic regions</td>
+</tr>
+<tr>
+<td>intergenic_perc</td>
+<td>percentage of reads mapped to intergenic regions</td>
+</tr>
+<tr>
+<td>bias_5_prim</td>
+<td>mean expression of 5' divided by mean expression of transcript</td>
+</tr>
+<tr>
+<td>bias_3_prim</td>
+<td>mean expression of 3' divided by mean expression of transcript</td>
+</tr>
+<tr>
+<td>bias_5to3_prim</td>
+<td>the ratio between both 5' and 3' biases</td>
+</tr>
+<tr>
+<td>STAR_counts</td>
+<td>STAR generated count table sum by samples</td>
+</tr>
+<tr>
+<td>STAR_counts_perc</td>
+<td>STAR counts in total uniquely mapped reads</td>
+</tr>
+<tr>
+<td>t_rRNA_counts_perc</td>
+<td>percentage of tRNA and rRNA in the total STAR counts</td>
+</tr>
+<tr>
+<td>protein_coding_perc</td>
+<td>percentage of protein coding gene counts in the total STAR counts</td>
+</tr>
+<tr>
+<td>pseudogene_perc</td>
+<td>percentage of  pseudogene counts in the total STAR counts</td>
+</tr>
+<tr>
+<td>long-noncoding_perc</td>
+<td>percentage of long-noncoding mRNA counts in the total STAR counts</td>
+</tr>
+<tr>
+<td>short-noncoding_perc</td>
+<td>percentage of short-noncoding mRNA counts in the total STAR counts</td>
+</tr>
+<tr>
+<td>final_STAR_counts</td>
+<td>STAR count counts sum by sample excluding tRNA and rRNA counts</td>
+</tr>
+<tr>
+<td>insert_mean</td>
+<td>mean insert size of paired end reads</td>
+</tr>
+<tr>
+<td>insert_median</td>
+<td>median insert size of paired end reads</td>
+</tr>
+<tr>
+<td>Total_genes</td>
+<td>Total number of genes identified after mapping</td>
+</tr>
+</tbody>
+</table>
+<h3 id="step-4-examine-qc-plots">Step 4: Examine QC plots</h3>
+<p>The QC plots folder contains three types of figures that can assist your diagnoses of RNASeq sample quality in step 3.
+- The first type is a simple visualization of QC parameters with dash lines mark where the set thresholds are compare to the real data (QC parameter in file names);</p>
+<p><img src='img/type_1_example.png' width = 1000></p>
+<p>In these figures, Good sample points were condensed to the left side for allowing more space for the others that need to be examined.<br />
+- The second type is the bam coverage plots and each file represents one quality level (file name start with bamcoverage);<br />
+- The third type contains information that shows additional QC measures and here are the details:</p>
+<p>STAR_minimal_counts_soft_threshold: Total number of genes recovered was plotted as a function of STAR counts, and saturation function was used to fit the data. Once fitted, the algorithm first detected the minimal STAR counts required for yielding defined gene recovery percentage and compared it to the set level. The higher value of them was then used as the final minimal STAR counts threshold for separating samples that need to be resequenced (if less than the threshold and have no other issues). After that, normal distribution parameters were calculated for total gene numbers of all other samples that are above the minimal STAR counts threshold, and we considered any sample fell below 95% confidence interval need to be manually QCed. The minimal percentage of gene recovery can be specified in the json config file.</p>
+<p>scenario 1: a soft threshold was used
+  <img src='img/Saturation_case1.png' width = 800>
+  scenario 2: soft threshold less than set level and the later one was used
+  <img src='img/Saturation_case2.png' width = 800></p>
+<pre><code>Spearman_correlation:Pairwise spearman correlation of all samples was calculated for detecting outlier. We assume the mean spearman value of each sample should be within the normal distribution of all sample means with 95% confidence (one tail). If not then that sample will be marked as 'outlier'.
+</code></pre>
+<p><img src='img/SP_corr.png' width = 500>  </p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../Reference_genome/" class="btn btn-neutral float-right" title="Create reference">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../Workflow/" class="btn btn-neutral" title="General workflow"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../Workflow/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../Reference_genome/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

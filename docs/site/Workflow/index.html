@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>General workflow - LJI-RNASeq QC pipeline</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "General workflow";
+    var mkdocs_page_input_path = "Workflow.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> LJI-RNASeq QC pipeline</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Tutorials</span></p>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">General workflow</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rna-qc-logistics">RNA QC logistics</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#architecture-of-the-json-configuration-file">Architecture of the json configuration file</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../QC_Tutorial/">QC tutorial</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../Reference_genome/">Create reference</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Maintenance</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="" href="../ ">Change QC rules</a>
+                    </li>
+                    <li class="toctree-l1"><a class="" href="../ ">Change pipeline</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">LJI-RNASeq QC pipeline</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Tutorials &raquo;</li>
+        
+      
+    
+    <li>General workflow</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="lji-sequencing-core-rna-seq-workflow"><strong>LJI Sequencing core RNA-Seq workflow</strong></h1>
+<hr />
+<h3 id="prerequisites"><strong>Prerequisites</strong></h3>
+<p>Install all required python libraries; we recommend using conda to manage your vitual environment if outside LJI environment.</p>
+<pre><code>&gt;conda create -n RNA_SEQ python=3.7
+&gt;conda activate RNA_SEQ
+&gt;which python
+
+&gt;/anaconda3/envs/RNA_SEQ/bin/python
+</code></pre>
+<p>for starters at LJI you can use:</p>
+<pre><code>&gt;/mnt/BioHome/ndu/anaconda3/bin/python
+</code></pre>
+<hr />
+<h3 id="rna-qc-logistics"><strong>RNA QC logistics</strong></h3>
+<p><strong>- Run samples</strong></p>
+<p>I. Make a clone of this repository to your own directory. If you do not have required packages pre-installed, please download and install them on the cluster server following the links in the main page.</p>
+<p>II. Edit the both .sh files to enure the link to the python scripts are correct; for example, if your cloned directory is   </p>
+<pre><code>&gt;/home/YOURNAME/RNA_SEQ_PIPELINE
+</code></pre>
+<p>change the excution line in 1.RNA_Seq_Mapping.sh to   </p>
+<pre><code>&gt;/anaconda3/envs/RNA_SEQ/bin/python /home/YOURNAME/RNA_SEQ_PIPELINE/Pipeline_functions/RNA_SEQ_sub_GO.py
+-c conf_RNA_Seq.json -i fastq_table.csv -n 4 -seq "Paired"
+</code></pre>
+<p>III. The <code>RNA_SEQ_sub_GO.py</code>  script takes 4 inputs: <code>-c</code> - config file, <code>-i</code> fastq location table, <code>-n</code> cpus, <code>-seq</code> single ended "Single" or pair ended "Paired" input fastq type. For best performance please use the default cpu setting if possible.</p>
+<ul>
+<li>Example of fastq table; note that the names in the sample ID will be used for naming all of the down stream files.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>sample ID</th>
+<th>fastq_f</th>
+<th>fastq_r</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sample 1</td>
+<td>Fastq_input/sample_1_R1.fastq.gz</td>
+<td>Fastq_input/sample_1_R2.fastq.gz</td>
+</tr>
+<tr>
+<td>sample 2</td>
+<td>Fastq_input/sample_2_R1.fastq.gz</td>
+<td>Fastq_input/sample_2_R2.fastq.gz</td>
+</tr>
+<tr>
+<td>sample 3</td>
+<td>Fastq_input/sample_3_R1.fastq.gz</td>
+<td>Fastq_input/sample_3_R2.fastq.gz</td>
+</tr>
+</tbody>
+</table>
+<p>IV. Modify json file based on your settings . In most cases you will only need to edit the "dirin" and "metadata_dir" in "config", for changing reference genome please go to <a href="">Reference genome</a>, and for changing QC criteria please go to <a href="">QC parameters</a>.</p>
+<h4 id="architecture-of-the-json-configuration-file">Architecture of the json configuration file</h4>
+<p><img src = './img/json_file.png'></p>
+<ul>
+<li>optional: Example of metadata file; if the number of samples in metadata file is less than the total number of samples processed by the pipeline, only those in the metadata file will be shown in the PCA plot. The value of metadata_dir can be left empty (set to " "), and only QC results will be used in the PCA plot.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>sample ID</th>
+<th>Sex</th>
+<th>Disease</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sample 1</td>
+<td>Male</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>sample 2</td>
+<td>Female</td>
+<td>No</td>
+</tr>
+<tr>
+<td>sample 3</td>
+<td>Male</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>V. Execute <code>&gt;qsub 1.RNA_Seq_Mapping.sh</code> on the server; this run will create necessary folders and generate bash files in the 'Submission' folder for running the pipelines in parallel, and a '2.Submissions.sh' file in the working directory. Once finished please go to the Submission folder and double check one or two files and make sure the settings were properly configured in the scripts if you are not certain.</p>
+<p>VI.  Execute <code>&gt;bash 2.Submissions.sh</code> on the server; this step will qsub all bash files in the Submission folder. If your sample number is more than that the cluster could handle, considering separate them into different batches.</p>
+<p>VII. Once all submissions have been completed, execute <code>&gt;qsub 3.RNA_Seq_QC.sh</code> to generate QC report and plots. The 'QC_report.html' will be generated inside the working directory with links to other plots and tables.</p>
+<hr />
+<p><strong>- Update the sequencing run log (<a href="https://docs.google.com/spreadsheets/d/1WPmbCofdCcxCRrpx6tPM78g34nTWHJTLZe7ySV3v-no/edit#gid=0">VD_Vijay&amp;Ay_Bioinfo_log</a>)</strong>
+* note: Fill the 'Seq QC location' column with the QC report link using this format <code>=HYPERLINK("https://informaticsdata.liai.org/NGS_analyses/ad_hoc/Groups/YOUR_DIR.../QC_report.html","report")</code></p>
+<p>At this point you need to contact the person in charge of the project to manually check samples in category 3 (manual QC) following the <a href="">QC tutorial</a>. Once finished the 'failed' samples together with the category 2 (reseq) samples will be resequenced by the sequence team; you need to notify them.  </p>
+<hr />
+<p><strong>- Update libraries</strong></p>
+<p>Once the re-sequencing step is finished, you will get the updated fastq files from the sequence team (or bcl files where you can extract the fastq files from). If the sample was only resequenced due to low sequencing depth without using new library, merge the old and new fastq files together and qsub the corresponding bash file in the Submission folder, and then redo step VII. If an new library was used for sequencing or the sequencing run had issues, delete the old fastq file and do the above steps.</p>
+<p>Usually the QC step can be done within one iteration, however in case when multiple iterations are required, the same principle guidelines can be applied.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../QC_Tutorial/" class="btn btn-neutral float-right" title="QC tutorial">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../QC_Tutorial/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
