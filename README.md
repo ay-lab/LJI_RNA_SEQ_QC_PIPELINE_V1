@@ -4,9 +4,9 @@
 * La Jolla, CA USA
 * Version: 1.2 (03/24/2020)
 
-The pipeline was implemented for RNASeq mapping and QC. For LJI internal use, you do not need to make any changes. 
+For LJI internal use, you do not need to make any changes. 
 
-For external users, please edit the following scripts and change the python environment to your own settings.
+**For external users, please edit the following scripts and change the python environment to your own settings.**
 
 Pipeline_functions/RNA_SEQ_QC_GO.py
 Pipeline_functions/RNA_SEQ_sub_GO.py
