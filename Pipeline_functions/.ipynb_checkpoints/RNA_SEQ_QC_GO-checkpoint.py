@@ -1,7 +1,5 @@
 #!/mnt/BioHome/ndu/anaconda3/bin/python
 
-#/usr/bin/env python
-
 __author__ = "Niu Du"
 __email__ = "ndu@lji.org"
 

@@ -1,6 +1,5 @@
 #!/mnt/BioHome/ndu/anaconda3/bin/python
 
-#/usr/bin/env python
 
 # Gene rate Submission.sh within working dir
 __author__ = "Niu Du"
