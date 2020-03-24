@@ -12,14 +12,15 @@ Pipeline_functions/RNA_SEQ_QC_GO.py
 Pipeline_functions/RNA_SEQ_sub_GO.py
 
 change 
+
     #!/mnt/BioHome/ndu/anaconda3/bin/python
 to 
 
-#!/YOUR_PYTHON_PATH 
+    #!/YOUR_PYTHON_PATH 
 
 or
 
-#!/usr/bin/env python
+    #!/usr/bin/env python
 
 Also, please install python libraries that are listed in the requirements:
 
