@@ -26,7 +26,7 @@ Also, please install python libraries that are listed in the requirements:
 
     pip install -r requirements.txt
 
-For details please see [Document](https://ndu-ucsd.github.io/RNA_SEQ_PIPELINE/).
+For details please see [user's tutorial document](https://ndu-ucsd.github.io/RNA_SEQ_PIPELINE/).
 
 
 ## Release Note
