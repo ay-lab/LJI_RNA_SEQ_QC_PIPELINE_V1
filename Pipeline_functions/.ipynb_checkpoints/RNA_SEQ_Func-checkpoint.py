@@ -1,7 +1,5 @@
 ####################### RNA Seq mapping and QC pipeline for Vijay and Ay lab - Single/Paired end #######################
 
-# Version: 1.2 (03/09/2020)
-
 # Niu Du (ndu [at] lji.org)
 # La Jolla Institute for Immunology (LJI)
 # La Jolla, CA USA

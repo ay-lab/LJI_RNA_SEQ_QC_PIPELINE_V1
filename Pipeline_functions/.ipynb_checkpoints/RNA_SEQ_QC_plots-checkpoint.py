@@ -10,7 +10,7 @@
 # python 3.X 
 # seaborn 0.9.0
 # plotly 4.4.1
-# scanpy 1.4.1
+
 
 import json
 from glob import glob
