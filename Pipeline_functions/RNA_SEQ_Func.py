@@ -229,12 +229,4 @@ def make_report(dict_conf,sample_list):
     df_html = df_QC_report[['seq_QC','map_report','map_QC','bam_QC','bigwig','recommendation','Outlier','Note']]
     df_html.index.name = f'<a href="./check_QC_PCA.html">PCA_plot</a>\t\t<a href="./QC_report.csv">Download_table</a>\t\t<a href="./QC_plots">QC_plots</a>'
     df_html.to_html(f'QC_report.html',escape=False,notebook = True)
-    
-    df_note = pd.read_csv('/mnt/BioAdHoc/Groups/vd-ay/RNASeq_Workflow/Reference/QC_notes.csv')
-    with open(f'QC_report.html','r') as f:
-        text = f.read()
-        text = text.replace('</style>\n','</style>\n' + df_note.to_html(header = None,index = None).replace('border="1"','border="0"'))
-    with open(f'QC_report.html','w') as f:
-        f.write(text)
-        
         

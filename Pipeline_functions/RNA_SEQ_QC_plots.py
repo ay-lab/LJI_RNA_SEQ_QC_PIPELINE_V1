@@ -19,6 +19,7 @@ import pandas as pd
 import seaborn as sns
 import plotly.offline as py
 from sklearn.decomposition import PCA,TruncatedSVD
+from scipy.stats import spearmanr
 import numpy as np
 from scipy.stats import norm
 import plotly.graph_objs as go
@@ -117,9 +118,11 @@ def bam_plot():
 def RNA_QC_spearman():
     '''Using spearman correlation to detect outliers'''
     try:
+        # calculate corr for all TPM counts
         df_corr = pd.read_csv('counts/TPM_counts.csv',index_col = 0).corr(method = 'spearman')
         sns.clustermap(df_corr,vmin = 0, vmax = 1,figsize = (int(len(df_corr)/3),int(len(df_corr)/3)))
         plt.savefig(f'QC_plots/Spearman_correlation.png',format='png', bbox_inches='tight')
+        
     except FileNotFoundError:
         print('Please generate TPM table')
         
@@ -181,19 +184,32 @@ def Plot_3D(df_meta_input = None,n_comps = 10,dim = 3):
         
         # Compute PCA results for plotiing
         data_array = df_plot.apply(lambda x: np.log2(x+1)).values.T
-        pca = PCA(n_components=3)
+        pca = PCA(n_components=10)
         PCA_result = pca.fit_transform(data_array)
         Ratio = pca.explained_variance_ratio_
         mu = PCA_result.mean(axis=0)
         PCA_result = PCA_result - mu
-        # eigenvectors, eigenvalues, V = np.linalg.svd(PCA_result.T, full_matrices=False)
-        # projected_data = np.dot(PCA_result, eigenvectors)
-        # Scalar = projected_data.std(axis=0).mean()
         X = [xx[0] for xx in PCA_result]
         Y = [xx[1] for xx in PCA_result]
         Z = [xx[2] for xx in PCA_result]
 
-
+        # generate PCA - QC correlation matrix heatmap here
+        df_PCA = pd.DataFrame(PCA_result,columns=[f'PC_{i+1}' for i in range(PCA_result.shape[1])],index = df_QC_report.index)
+        corr_matrix = np.zeros([int(df_QC_report.shape[1]-3),int(df_PCA.shape[1])])
+        p_matrix = np.zeros([int(df_QC_report.shape[1]-3),int(df_PCA.shape[1])])
+        for i,col in enumerate(df_QC_report.columns[:-3]): 
+            for j,PC in enumerate(df_PCA.columns):
+                corr_matrix[i,j] = spearmanr(df_QC_report[col].values,df_PCA[PC].values).correlation
+                p_matrix[i,j] = spearmanr(df_QC_report[col].values,df_PCA[PC].values).pvalue
+        _,ax = plt.subplots(figsize = (25,6))
+        sns.heatmap(pd.DataFrame(p_matrix,index = df_QC_report.columns[:-3], columns= df_PCA.columns).apply(lambda x: -np.log10(x)).T,cmap = 'GnBu')
+        for j in range(len(pd.DataFrame(corr_matrix).T.columns)):
+            for i in range(len(pd.DataFrame(corr_matrix).T.index)):
+                text = ax.text(j+0.5, i+0.5, pd.DataFrame(corr_matrix).T.applymap(lambda x:'%.2f'%x).values[i, j],
+                               ha="center", va="center", color="red")
+        plt.savefig(f'QC_plots/PCA_QC_correlation.png',format='png', bbox_inches='tight')
+        
+        # Back to plot 3D funciton
         df_PCA = pd.DataFrame({'sample':df_meta_plot.index.values,'X':X,'Y':Y,'Z':Z}).set_index('sample')
         group_factors = df_meta_plot.columns
 
