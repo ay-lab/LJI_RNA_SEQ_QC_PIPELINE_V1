@@ -4,20 +4,29 @@
 * La Jolla, CA USA
 * Version: 1.2 (03/24/2020)
 
-The pipeline was implemented for RNASeq mapping and QC. For LJI internal use, you do not need to make any changes. 
+For LJI internal use, you do not need to make any changes. 
 
-For external users, please edit the following scripts and change the python environment to your own settings.
+**For external users, please edit the following scripts and change the python environment to your own settings.**
 
 Pipeline_functions/RNA_SEQ_QC_GO.py
 Pipeline_functions/RNA_SEQ_sub_GO.py
 
-change '''#!/mnt/BioHome/ndu/anaconda3/bin/python''' to '''#!/YOUR_PYTHON_PATH''' or '''#!/usr/bin/env python'''
+change 
+
+    #!/mnt/BioHome/ndu/anaconda3/bin/python
+to 
+
+    #!/YOUR_PYTHON_PATH 
+
+or
+
+    #!/usr/bin/env python
 
 Also, please install python libraries that are listed in the requirements:
 
     pip install -r requirements.txt
 
-For details please see [Document](https://ndu-ucsd.github.io/RNA_SEQ_PIPELINE/).
+For details please see [user's tutorial document](https://ndu-ucsd.github.io/RNA_SEQ_PIPELINE/).
 
 
 ## Release Note
