@@ -54,7 +54,7 @@ def RNA_QC(sample_tuple,dict_threshold,count_X_low,count_Y_low):
         G = True
     else:
         G = False
-    if (sample_tuple.insert_median > dict_threshold['insert_median'][0]):# and (sample_tuple.insert_median < dict_threshold['insert_median'][1]):
+    if (sample_tuple.insert_median > dict_threshold['insert_median'][0]) or (sample_tuple.insert_median == 0):# and (sample_tuple.insert_median < dict_threshold['insert_median'][1]):
         H = True
     else:
         H = False

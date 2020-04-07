@@ -42,8 +42,13 @@ def fit_platt(list_count_gene):
 def read_fastp(sample):
     with open(f'fastp_output/{sample}_fastp.json') as json_file:
         data = json.load(json_file)
-        total_reads = int(data['summary']['before_filtering']['total_reads']/2)
-        filtered_reads = int(data['summary']['after_filtering']['total_reads']/2)
+        try:
+            if data['summary']['before_filtering']['read2_mean_length']>0:
+                scalar = 2
+        except KeyError:
+            scalar = 1
+        total_reads = int(data['summary']['before_filtering']['total_reads']/scalar)
+        filtered_reads = int(data['summary']['after_filtering']['total_reads']/scalar)
         filtered_reads_perc = round(100*filtered_reads/total_reads,2)
         adaptor_trimm_perc = round(100*data['adapter_cutting']['adapter_trimmed_reads']/data['summary']['before_filtering']['total_reads'],2)
         dup_rate = round(100*data['duplication']['rate'],2)
@@ -91,10 +96,13 @@ def read_Qualimap(sample):
 def read_bamqc(sample):
     with open(f'qualimap_bamqc/{sample}/genome_results.txt') as Qualimap_file:
         for l in Qualimap_file.readlines():
-            if 'mean insert size' in l:
-                insert_mean = float(''.join(l.split('=')[-1][:-2].split(',')))
-            if 'median insert size' in l:
-                insert_median = float(''.join(l.split('=')[-1][:-1].split(',')))
+            try:
+                if 'mean insert size' in l:
+                    insert_mean = float(''.join(l.split('=')[-1][:-2].split(',')))
+                if 'median insert size' in l:
+                    insert_median = float(''.join(l.split('=')[-1][:-1].split(',')))
+            except ValueError:
+                insert_mean, insert_median = 0, 0
     link = f'<a href="./qualimap_bamqc/{sample}/qualimapReport.html">bam_QC</a>'
     return [insert_mean,insert_median,link]    
    
@@ -127,30 +135,55 @@ def gen_Submission(fastq_table,dict_conf,thread = 4,seq_type = 'Paired'):
     bamCoverage_app = dict_conf['app']['bamCoverage']
     qualimap_app = dict_conf['app']['qualimap']
     
+    if seq_type == 'Paired':
+        for sample in fastq_table.index:
+            fastq_f = fastq_table.loc[sample]['fastq_f']
+            fastq_r = fastq_table.loc[sample]['fastq_r']
+            with open(f'Submissions/{sample}.sh','w') as f:
+                # Prep
+                f.write(f'#!/bin/bash\n#PBS -N {sample}\n#PBS -o {dirin}/temp/out_{sample}\n#PBS -e {dirin}/temp/err_{sample}\n#PBS -q default\n#PBS -l nodes=1:ppn={thread}\n#PBS -l mem=40gb\n#PBS -l walltime=10:00:00\ncd {dirin}/\n')
+                f.write('mkdir -p fastp_output\nmkdir -p fastp_report\nmkdir -p Fastq_filtered\nmkdir -p Input\nmkdir -p counts\n')
+                f.write(f'cp {ref_dir}/../{annotation_file} Input/ \n')
+                # fastp
+                f.write(f'{fastp_app} -w {thread} -i {fastq_f} -I {fastq_r} -o {dirin}/Fastq_filtered/{sample}_R1.fastq.gz -O {dirin}/Fastq_filtered/{sample}_R2.fastq.gz -j {dirin}/fastp_output/{sample}_fastp.json -h {dirin}/fastp_report/{sample}_fastp.html\n\n')
+
+                # STAR_MAPPING
+                f.write(f'mkdir -p {dirin}/bam_aligned/{sample}\n')
+                f.write(f'{STAR_app} --runThreadN {thread} --genomeDir {ref_dir} --sjdbGTFfile {gtf_dir} --readFilesIn {dirin}/Fastq_filtered/{sample}_R1.fastq.gz {dirin}/Fastq_filtered/{sample}_R2.fastq.gz --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix {dirin}/bam_aligned/{sample}/{sample}_\n\n')
+
+                # Export for QC
+                f.write(f'mkdir -p {dirin}/bed_wiggle\n')
+                f.write(f'{samtools_app} index {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam\n')
+                f.write(f'{bamCoverage_app} -p {thread}  -b {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -o {dirin}/bed_wiggle/{sample}.bw\n')
+                f.write(f'mkdir -p {dirin}/qualimap/{sample}\n')
+                f.write(f'{qualimap_app} rnaseq -pe --sorted --java-mem-size=30G -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -gtf {gtf_dir} -outdir {dirin}/qualimap/{sample}\n')
+                f.write(f'mkdir -p {dirin}/qualimap_bamqc/{sample}\n')
+                f.write(f'{qualimap_app} bamqc -nt {thread} --java-mem-size=30G --skip-duplicated -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -outdir {dirin}/qualimap_bamqc/{sample}\n')
     
-    for sample in fastq_table.index:
-        fastq_f = fastq_table.loc[sample]['fastq_f']
-        fastq_r = fastq_table.loc[sample]['fastq_r']
-        with open(f'Submissions/{sample}.sh','w') as f:
-            # Prep
-            f.write(f'#!/bin/bash\n#PBS -N {sample}\n#PBS -o {dirin}/temp/out_{sample}\n#PBS -e {dirin}/temp/err_{sample}\n#PBS -q default\n#PBS -l nodes=1:ppn={thread}\n#PBS -l mem=40gb\n#PBS -l walltime=10:00:00\ncd {dirin}/\n')
-            f.write('mkdir -p fastp_output\nmkdir -p fastp_report\nmkdir -p Fastq_filtered\nmkdir -p Input\nmkdir -p counts\n')
-            f.write(f'cp {ref_dir}/../{annotation_file} Input/ \n')
-            # fastp
-            f.write(f'{fastp_app} -w {thread} -i {fastq_f} -I {fastq_r} -o {dirin}/Fastq_filtered/{sample}_R1.fastq.gz -O {dirin}/Fastq_filtered/{sample}_R2.fastq.gz -j {dirin}/fastp_output/{sample}_fastp.json -h {dirin}/fastp_report/{sample}_fastp.html\n\n')
+    elif seq_type == 'Single':
+        for sample in fastq_table.index:
+            fastq_f = fastq_table.loc[sample]['fastq_f']
+            with open(f'Submissions/{sample}.sh','w') as f:
+                    # Prep
+                    f.write(f'#!/bin/bash\n#PBS -N {sample}\n#PBS -o {dirin}/temp/out_{sample}\n#PBS -e {dirin}/temp/err_{sample}\n#PBS -q default\n#PBS -l nodes=1:ppn={thread}\n#PBS -l mem=40gb\n#PBS -l walltime=10:00:00\ncd {dirin}/\n')
+                    f.write('mkdir -p fastp_output\nmkdir -p fastp_report\nmkdir -p Fastq_filtered\nmkdir -p Input\nmkdir -p counts\n')
+                    f.write(f'cp {ref_dir}/../{annotation_file} Input/ \n')
+                    # fastp
+                    f.write(f'{fastp_app} -w {thread} -i {fastq_f} -o {dirin}/Fastq_filtered/{sample}_R1.fastq.gz -j {dirin}/fastp_output/{sample}_fastp.json -h {dirin}/fastp_report/{sample}_fastp.html\n\n')
 
-            # STAR_MAPPING
-            f.write(f'mkdir -p {dirin}/bam_aligned/{sample}\n')
-            f.write(f'{STAR_app} --runThreadN {thread} --genomeDir {ref_dir} --sjdbGTFfile {gtf_dir} --readFilesIn {dirin}/Fastq_filtered/{sample}_R1.fastq.gz {dirin}/Fastq_filtered/{sample}_R2.fastq.gz --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix {dirin}/bam_aligned/{sample}/{sample}_\n\n')
+                    # STAR_MAPPING
+                    f.write(f'mkdir -p {dirin}/bam_aligned/{sample}\n')
+                    f.write(f'{STAR_app} --runThreadN {thread} --genomeDir {ref_dir} --sjdbGTFfile {gtf_dir} --readFilesIn {dirin}/Fastq_filtered/{sample}_R1.fastq.gz --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts --outFileNamePrefix {dirin}/bam_aligned/{sample}/{sample}_\n\n')
 
-            # Export for QC
-            f.write(f'mkdir -p {dirin}/bed_wiggle\n')
-            f.write(f'{samtools_app} index {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam\n')
-            f.write(f'{bamCoverage_app} -p {thread}  -b {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -o {dirin}/bed_wiggle/{sample}.bw\n')
-            f.write(f'mkdir -p {dirin}/qualimap/{sample}\n')
-            f.write(f'{qualimap_app} rnaseq -pe --sorted --java-mem-size=30G -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -gtf {gtf_dir} -outdir {dirin}/qualimap/{sample}\n')
-            f.write(f'mkdir -p {dirin}/qualimap_bamqc/{sample}\n')
-            f.write(f'{qualimap_app} bamqc -nt {thread} --java-mem-size=30G --skip-duplicated -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -outdir {dirin}/qualimap_bamqc/{sample}\n')
+                    # Export for QC
+                    f.write(f'mkdir -p {dirin}/bed_wiggle\n')
+                    f.write(f'{samtools_app} index {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam\n')
+                    f.write(f'{bamCoverage_app} -p {thread}  -b {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -o {dirin}/bed_wiggle/{sample}.bw\n')
+                    f.write(f'mkdir -p {dirin}/qualimap/{sample}\n')
+                    f.write(f'{qualimap_app} rnaseq --sorted --java-mem-size=30G -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -gtf {gtf_dir} -outdir {dirin}/qualimap/{sample}\n')
+                    f.write(f'mkdir -p {dirin}/qualimap_bamqc/{sample}\n')
+                    f.write(f'{qualimap_app} bamqc -nt {thread} --java-mem-size=30G --skip-duplicated -bam {dirin}/bam_aligned/{sample}/{sample}_Aligned.sortedByCoord.out.bam -outdir {dirin}/qualimap_bamqc/{sample}\n')
+    
     with open('2.Submissions.sh','w') as f:    
         for submission in glob('Submissions/*.sh'):        
             f.write(f'qsub {submission}\n')
@@ -181,7 +214,7 @@ def make_report(dict_conf,sample_list):
     
     # calculate/export count table and  TPM
     [df_counts,df_counts_filter] = merge_counts(sample_list,df_anno)
-    
+
     # Make report files
     df_QC_report = pd.DataFrame([read_sample(sample,dirin,genome_version) for sample in sample_list])
     df_QC_report.index = sample_list
