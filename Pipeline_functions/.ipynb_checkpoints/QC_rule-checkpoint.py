@@ -50,7 +50,7 @@ def RNA_QC(sample_tuple,dict_threshold,count_X_low,count_Y_low):
         F = False
     else:
         F = True
-    if (float(sample_tuple.bias_5to3_prim) < dict_threshold['bias_5to3_prim'][1])&(float(sample_tuple.bias_5to3_prim) > dict_threshold['bias_5to3_prim'][0]): # In rear cases the bias value is small; also not accepted
+    if (float(str(sample_tuple.bias_5to3_prim).replace(',','')) < dict_threshold['bias_5to3_prim'][1])&(float(str(sample_tuple.bias_5to3_prim).replace(',','')) > dict_threshold['bias_5to3_prim'][0]): # In rear cases the bias value is small; also not accepted
         G = True
     else:
         G = False

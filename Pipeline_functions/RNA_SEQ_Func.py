@@ -50,7 +50,10 @@ def read_fastp(sample):
         total_reads = int(data['summary']['before_filtering']['total_reads']/scalar)
         filtered_reads = int(data['summary']['after_filtering']['total_reads']/scalar)
         filtered_reads_perc = round(100*filtered_reads/total_reads,2)
-        adaptor_trimm_perc = round(100*data['adapter_cutting']['adapter_trimmed_reads']/data['summary']['before_filtering']['total_reads'],2)
+        try:
+            adaptor_trimm_perc = round(100*data['adapter_cutting']['adapter_trimmed_reads']/data['summary']['before_filtering']['total_reads'],2)
+        except KeyError:
+            adaptor_trimm_perc = 0
         dup_rate = round(100*data['duplication']['rate'],2)
         link = f'<a href="./fastp_report/{sample}_fastp.html">seq_QC</a>'
     return [total_reads,filtered_reads,filtered_reads_perc,adaptor_trimm_perc,dup_rate,link]
@@ -247,7 +250,7 @@ def make_report(dict_conf,sample_list):
     
     # Calculate outliers based on spearman correlation and any sample with mean corr significantly different from the mean at 95% confidence interval will be marked "outlier"
     
-    df_corr = pd.read_csv('counts/TPM_counts.csv',index_col = 0).corr(method = 'spearman')    
+    df_corr = pd.read_csv('counts/TPM_counts.csv',index_col = 0).corr(method = 'spearman').fillna(0)    
     corr_norm = norm.fit(df_corr.reindex(df_QC_report.index).mean(axis = 1))
     df_QC_report['Outlier'] = ['Yes' if x < min(norm.ppf(0.05,corr_norm[0],corr_norm[1]),0.6) else 'No' for x in df_corr.reindex(df_QC_report.index).mean(axis = 1)] # if mean spearman corr for a sample < 0.6 or less than 0.95 confidence that is lower than 0.6, then mark as outlier 
     

@@ -166,7 +166,7 @@ def soft_threshold(dict_conf):
         print('Please generate TPM table')
     
         
-def Plot_3D(df_meta_input = None,n_comps = 10,dim = 3):
+def Plot_3D(df_meta_input = None,n_comps = 10, dim = 3):
     try:
         df_QC_report = pd.read_csv('QC_report.csv',index_col=0)
         
@@ -184,7 +184,7 @@ def Plot_3D(df_meta_input = None,n_comps = 10,dim = 3):
         
         # Compute PCA results for plotiing
         data_array = df_plot.apply(lambda x: np.log2(x+1)).values.T
-        pca = PCA(n_components=10)
+        pca = PCA(n_components = min(n_comps,len(df_QC_report)-1)) # PC number can not exceed sample size -1
         PCA_result = pca.fit_transform(data_array)
         Ratio = pca.explained_variance_ratio_
         mu = PCA_result.mean(axis=0)
